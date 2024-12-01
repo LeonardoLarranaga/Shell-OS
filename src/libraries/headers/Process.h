@@ -19,8 +19,8 @@ void swap(processNode_t*, processNode_t *);
 void bubbleSort(processNode_t*);
 void firstComeFirstServed(const char*);
 void shortestJobFirst();
-void internalRoundRobin(int);
-void internalMKProcess(char**);
-void printProcesses();
+void roundRobin(char**, int);
+void mkprocess(char**, int);
+void lsprocesses();
 
 #endif

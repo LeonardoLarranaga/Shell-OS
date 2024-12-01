@@ -1,4 +1,5 @@
 #include "Process.h"
+#include "Memory.h"
 
 // Función para intercambiar dos procesos
 void swap(processNode_t *a, processNode_t *b) {  
@@ -30,11 +31,13 @@ void bubbleSort(processNode_t *start) {
     }  while (swapped);  
 }  
   
-// Lista de procesos
-processNode_t* processList = NULL;
-
 // Función para crear un proceso
-void internalMKProcess(char** arguments) {
+void mkprocess(char** arguments, int argumentCount) {
+    if (argumentCount != 2) {
+        printf("mkprocess: Expected two arguments.\n");
+        return;
+    }
+
     // Verificar que el burst time sea mayor a 0
     char* name = arguments[0];
     int burstTime = atoi(arguments[1]);
@@ -64,7 +67,7 @@ void internalMKProcess(char** arguments) {
 }
 
 // Función para imprimir los procesos
-void printProcesses() {
+void lsprocesses() {
     processNode_t* current = processList;
     if (current == NULL) {
         printf("lsprocesses: No processes in ready queue.\n");
@@ -83,8 +86,8 @@ void freeProcess(processNode_t* process) {
     free(process);
 }
 
-
 // Función para ejecutar el algoritmo de scheduling First Come First Served
+// TODO: Verificar que el proceso esté cargado en memoria. Cambiar processList por el bloque de memoria con los procesos cargados
 void firstComeFirstServed(const char* algorithm) {
     if (processList == NULL) {
         printf("FCFS scheduling: No processes in ready queue.\n");
@@ -120,6 +123,7 @@ void firstComeFirstServed(const char* algorithm) {
         totalTurnaroundTime += turnaroundTime;
 
         freeProcess(processList);
+        
         processList = processList->next;
         processCount += 1;
     }
@@ -141,7 +145,21 @@ void shortestJobFirst() {
 }
 
 // Función para ejecutar el algoritmo de scheduling Round Robin
-void internalRoundRobin(int timeQuantum) {
+// TODO: Cambiar processList por el bloque de memoria con los procesos cargados
+void roundRobin(char** arguments, int argumentCount) {
+    // Si no se especifica un quantum, se usa el valor por defecto de 10
+    int timeQuantum = 10;
+    if (argumentCount == 1) {
+        timeQuantum = atoi(arguments[0]);
+        if (timeQuantum <= 0) {
+            printf("roundrobin: Quantum must be greater than 0.\n");
+            return;
+        }
+    } else if (argumentCount != 0) {
+        printf("roundrobin: Expected only one optional argument.\n");
+        return;
+    }
+
     if (processList == NULL) {
         printf("Round Robin scheduling: No processes in ready queue.\n");
         return;

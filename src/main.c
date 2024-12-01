@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "Terminal.h"
 #include "Commands.h"
+
+// Lista de procesos
+processNode_t* processList = NULL;
 
 // Macro para liberar memoria
 #define FREEMEMORY freeMemory(input, command, arguments, argumentCount)
@@ -71,9 +73,9 @@ void executeCommand(char* command, char** arguments, int argumentCount) {
     } else if (!strcmp(command, "lsprocesses")) {
         lsprocesses();
     } else if (!strcmp(command, "fcfs")) {
-        fcfs();
+        firstComeFirstServed("FCFS");
     } else if (!strcmp(command, "sjf")) {
-        sjf();
+        shortestJobFirst();
     } else if (!strcmp(command, "roundrobin")) {
         roundRobin(arguments, argumentCount);
     } else {

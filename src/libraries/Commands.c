@@ -1,7 +1,4 @@
 #include "Commands.h"
-#include "File Manager.h"
-#include "Terminal.h"
-#include "Process.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -123,48 +120,6 @@ void myremove(char** arguments, int argumentCount) {
         int status = removeFile(arguments[i]);
         if (status == -1) printf("remove: '%s' couldn't be removed.\n", arguments[i]);
     }
-}
-
-// mkprocess - Crea un proceso con un nombre y un burst time
-void mkprocess(char** arguments, int argumentCount) {
-    if (argumentCount != 2) {
-        printf("mkprocess: Expected two arguments.\n");
-        return;
-    }
-    internalMKProcess(arguments);
-}
-
-// lsprocesses - Muestra los procesos en la ready queue
-void lsprocesses() {
-    printProcesses();
-}
-
-// fcfs - Ejecuta el algoritmo de scheduling First Come First Served
-void fcfs() {
-    firstComeFirstServed("FCFS");
-}
-
-// roundRobin - Ejecuta el algoritmo de scheduling Round Robin
-void roundRobin(char** arguments, int argumentCount) {
-    // Si no se especifica un quantum, se usa el valor por defecto de 10
-    int quantum = 10;
-    if (argumentCount == 1) {
-        quantum = atoi(arguments[0]);
-        if (quantum <= 0) {
-            printf("roundrobin: Quantum must be greater than 0.\n");
-            return;
-        }
-    } else if (argumentCount != 0) {
-        printf("roundrobin: Expected only one optional argument.\n");
-        return;
-    }
-
-    internalRoundRobin(quantum);
-}
-
-// sjf - Ejecuta el algoritmo de scheduling Shortest Job First
-void sjf() {
-    shortestJobFirst();
 }
 
 // parseCommands - Parsea los comandos ingresados por el usuario
