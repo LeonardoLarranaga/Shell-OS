@@ -2,7 +2,7 @@
 
 ## Instrucciones (desde el root del proyecto)
 
-- **Crear el CMake del proyecto:**
+- **Crear el CMake del proyecto (Realizar antes de cualquier cosa):**
 ```
 cmake .
 ```
