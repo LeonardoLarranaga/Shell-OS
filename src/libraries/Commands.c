@@ -14,6 +14,7 @@
 #define READ_END 0
 #define WRITE_END 1
 
+// mycat - Concatena y muestra el contenido de uno o más archivos.
 void mycat(char** arguments, int argumentCount) {
     if (argumentCount == 0) {
         printf("mycat: Expected at least one argument.\n");
@@ -21,6 +22,7 @@ void mycat(char** arguments, int argumentCount) {
     }
 
     int fd;
+    // Iterar sobre los argumentos y mostrar su contenido
     for (int i = 0; i < argumentCount; i++) {
         char* result = NULL;
         readFile(&result, arguments[i], &fd);
@@ -35,6 +37,7 @@ void mycat(char** arguments, int argumentCount) {
     }
 }
 
+// type - Crea un archivo con el contenido ingresado por el usuario.
 void type(char** arguments, int argumentCount) {
     if (argumentCount == 0) {
         printf("type: Expected at least one argument.\n");
@@ -44,6 +47,7 @@ void type(char** arguments, int argumentCount) {
         return;
     }
 
+    // Crear o abrir el archivo
     int fd = createTypeFile(arguments[0]);
     if (fd == -1) {
         printf("type: '%s' couldn't be created or opened.\n", arguments[0]);
@@ -52,8 +56,10 @@ void type(char** arguments, int argumentCount) {
 
     char* fullString = (char*) malloc(1);
 
+    // Leer el contenido ingresado por el usuario
     while (1) {
         char* line = readLine();
+        // Si el usuario ingresa '$', terminar la lectura
         if (strchr(line, '$') != NULL) {
             *strchr(line, '$') = '\0';
             fullString = (char*) realloc(fullString, strlen(fullString) + strlen(line) + 5);
@@ -66,12 +72,14 @@ void type(char** arguments, int argumentCount) {
         strcat(fullString, "\n");
     }
 
+    // Escribir el contenido en el archivo
     int writeStatus = writeTypeFile(fd, fullString);
     if (writeStatus == -1) printf("type: '%s' couldn't be written.", arguments[0]);
     close(fd);
     free(fullString);
 }
 
+// mycp - Copia el contenido de un archivo a uno o más archivos.
 void mycp(char** arguments, int argumentCount) {
     if (argumentCount < 2) {
         printf("mycp: Expected at least two arguments.\n");
@@ -87,6 +95,7 @@ void mycp(char** arguments, int argumentCount) {
         return;
     } 
 
+    // Iterar sobre los argumentos y copiar el contenido
     for (int i = 1; i < argumentCount; i++) {
         fd = createTypeFile(arguments[i]);
         if (fd == -1) {
@@ -102,18 +111,21 @@ void mycp(char** arguments, int argumentCount) {
     free(result);
 }
 
+// myremove - Elimina uno o más archivos.
 void myremove(char** arguments, int argumentCount) {
     if (argumentCount == 0) {
         printf("remove: Expected at least one argument.\n");
         return;
     }
 
+    // Iterar sobre los argumentos y eliminar los archivos
     for (int i = 0; i < argumentCount; i++) {
         int status = removeFile(arguments[i]);
         if (status == -1) printf("remove: '%s' couldn't be removed.\n", arguments[i]);
     }
 }
 
+// mkprocess - Crea un proceso con un nombre y un burst time
 void mkprocess(char** arguments, int argumentCount) {
     if (argumentCount != 2) {
         printf("mkprocess: Expected two arguments.\n");
@@ -122,15 +134,19 @@ void mkprocess(char** arguments, int argumentCount) {
     internalMKProcess(arguments);
 }
 
+// lsprocesses - Muestra los procesos en la ready queue
 void lsprocesses() {
     printProcesses();
 }
 
+// fcfs - Ejecuta el algoritmo de scheduling First Come First Served
 void fcfs() {
     firstComeFirstServed("FCFS");
 }
 
+// roundRobin - Ejecuta el algoritmo de scheduling Round Robin
 void roundRobin(char** arguments, int argumentCount) {
+    // Si no se especifica un quantum, se usa el valor por defecto de 10
     int quantum = 10;
     if (argumentCount == 1) {
         quantum = atoi(arguments[0]);
@@ -146,23 +162,28 @@ void roundRobin(char** arguments, int argumentCount) {
     internalRoundRobin(quantum);
 }
 
+// sjf - Ejecuta el algoritmo de scheduling Shortest Job First
 void sjf() {
     shortestJobFirst();
 }
 
+// parseCommands - Parsea los comandos ingresados por el usuario
 char** parseCommands(char* command, const char* delimiter) {
     int count = 0;
 
+    // Contar la cantidad de comandos
     char* token = strtok(strdup(command), delimiter);
     while (token != NULL) {
         count += 1;
         token = strtok(NULL, delimiter);
     }
 
+    // Crear un arreglo de comandos
     char** commands = malloc((count + 1) * sizeof(char*));
     token = strtok(strdup(command), delimiter);
 
     int i = 0;
+    // Iterar sobre los comandos y agregarlos al arreglo
     for (i = 0; token != NULL; i++) {
         while (*token == ' ') token += 1;
         commands[i] = strdup(token);
@@ -173,13 +194,17 @@ char** parseCommands(char* command, const char* delimiter) {
     return commands;
 }
 
+// executeCommands - Ejecuta los comandos ingresados por el usuario
 void executeCommands(char** commands) {
+    // Contar la cantidad de comandos
     int commandsAmount = 0;
     while (commands[commandsAmount] != NULL) commandsAmount++;
 
+    // Crear pipes para la comunicación entre procesos
     int pipesAmount = commandsAmount - 1;
     int pipes[pipesAmount][2];
 
+    // Crear los pipes
     for (int i = 0; i < pipesAmount; i++) {
         if (pipe(pipes[i]) == -1) {
             fprintf(stderr, "Pipe %d failed\n", i);
@@ -187,6 +212,7 @@ void executeCommands(char** commands) {
         }
     }
 
+    // Crear procesos hijos para ejecutar los comandos
     for (int i = 0; i < commandsAmount; i++) {
         pid_t pid = fork();
         if (pid == -1) {
@@ -194,6 +220,7 @@ void executeCommands(char** commands) {
             return;
         }
 
+        // Redireccionar la entrada y salida estándar de los procesos
         if (pid == 0) { 
             if (i == 0) {
                 dup2(pipes[i][WRITE_END], STDOUT_FILENO);
@@ -205,22 +232,26 @@ void executeCommands(char** commands) {
                 dup2(pipes[i][WRITE_END], STDOUT_FILENO);
             }
 
+            // Cerrar los pipes
             for (int j = 0; j < pipesAmount; j++) {
                 close(pipes[j][READ_END]);
                 close(pipes[j][WRITE_END]);
             }
 
+            // Ejecutar el comando
             char** arguments = parseCommands(commands[i], " ");
             execvp(arguments[0], arguments);
             free(arguments);
         }
     }
 
+    // Cerrar los pipes
     for (int j = 0; j < pipesAmount; j++) {
             close(pipes[j][READ_END]);
             close(pipes[j][WRITE_END]);
     }
 
+    // Esperar a que los procesos hijos terminen
     for (int i = 0; i < commandsAmount; i++) {
         wait(NULL);
     }

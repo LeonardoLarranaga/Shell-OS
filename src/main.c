@@ -20,7 +20,6 @@ void main() {
     int argumentCount = 0;
 
     while (1) {
-        // Mostrar prompt
         printf("yuniks:~$ ");
         input = readLine();
 

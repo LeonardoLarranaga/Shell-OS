@@ -12,4 +12,5 @@ void sjf();
 void roundRobin(char**, int);
 void executeCommands(char**);
 char** parseCommands(char*, const char*);
+
 #endif
