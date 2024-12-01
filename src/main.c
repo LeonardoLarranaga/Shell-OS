@@ -7,6 +7,12 @@
 // Lista de procesos
 processNode_t* processList = NULL;
 
+// Lista de bloques de memoria
+memoryBlock_t* memoryList = NULL;
+
+// Tamaño de la memoria
+int memorySize = 0;
+
 // Macro para liberar memoria
 #define FREEMEMORY freeMemory(input, command, arguments, argumentCount)
 
@@ -15,6 +21,8 @@ void freeMemory(char*, char*, char**, int);
 void executeCommand(char*, char**, int);
 
 char* input = NULL;
+
+// TODO: Preguntar al usuario el tamaño de la memoria cuando hacerlo? el proyecto dice que al inicio del programa... mmmmmm... tal vez el tamano de la memoria inicia como 0 y si el usuario quiere asignar procesos a la memoria se le dice que le tiene que asignar un tamano a la memoria primero idk
 
 void main() {
     char* command = NULL;
@@ -78,6 +86,16 @@ void executeCommand(char* command, char** arguments, int argumentCount) {
         shortestJobFirst();
     } else if (!strcmp(command, "roundrobin")) {
         roundRobin(arguments, argumentCount);
+    } else if (!strcmp(command, "killprocess")) {
+        killprocess(arguments, argumentCount);
+    } else if (!strcmp(command, "allocate")) {
+        allocate(arguments, argumentCount);
+    } else if (!strcmp(command, "freeprocess")) {
+        freeprocess(arguments, argumentCount);
+    } else if (!strcmp(command, "memorystatus")) {
+        memorystatus();
+    } else if (!strcmp(command, "compactmemory")) {
+        compactmemory();
     } else {
         // Manejar comandos con pipes
         char** commands = parseCommands(input, "|");

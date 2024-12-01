@@ -16,5 +16,9 @@ cmake --build .
 - Ejecutar el programa:
 
 ```
-./yuniksTerminal
+./yuniks
 ```
+
+## Lo que falta por hacer se encuentra marcado con TODO
+- Se puede encontrar utilizando la funcionalidad de buscar escribiendo '*// TODO:*'
+

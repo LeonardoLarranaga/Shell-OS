@@ -8,6 +8,7 @@
 typedef struct process_t {
     char* name;
     int burstTime;
+    int blockSize;
 } process_t;
 
 typedef struct processNode_t {
@@ -22,5 +23,6 @@ void shortestJobFirst();
 void roundRobin(char**, int);
 void mkprocess(char**, int);
 void lsprocesses();
+void killprocess(char**, int);
 
 #endif

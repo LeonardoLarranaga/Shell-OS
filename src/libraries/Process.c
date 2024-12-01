@@ -32,13 +32,14 @@ void bubbleSort(processNode_t *start) {
 }  
   
 // Función para crear un proceso
+// uso: mkprocess <processId> <burstTime> <blockSize>
 void mkprocess(char** arguments, int argumentCount) {
-    if (argumentCount != 2) {
-        printf("mkprocess: Expected two arguments.\n");
+    if (argumentCount != 3) {
+        printf("mkprocess: Expected three arguments.\n");
         return;
     }
 
-    // Verificar que el burst time sea mayor a 0
+    // Verificar que el burst time y block size sea mayor a 0
     char* name = arguments[0];
     int burstTime = atoi(arguments[1]);
     if (burstTime <= 0) {
@@ -46,12 +47,29 @@ void mkprocess(char** arguments, int argumentCount) {
         return;
     }
 
+    int blockSize = atoi(arguments[2]);
+    if (blockSize <= 0) {
+        printf("mkprocess: Block size must be greater than 0.\n");
+        return;
+    }
+    
+    // Verificar que el proceso no exista
+    processNode_t* current = processList;
+    while (current != NULL) {
+        if (!strcmp(current->process_t.name, name)) {
+            printf("mkprocess: Process '%s' already exists.\n", name);
+            return;
+        }
+        current = current->next;
+    }
+
     // Crear un nuevo proceso
     processNode_t* newNode = (processNode_t*) malloc(sizeof(processNode_t));
-    // Asignar el nombre y el burst time al proceso
+    // Asignar propiedades al nuevo proceso
     newNode->process_t.name = (char*)malloc(strlen(name) + 1);
     strcpy(newNode->process_t.name, name);
     newNode->process_t.burstTime = burstTime;
+    newNode->process_t.blockSize = blockSize;
     newNode->next = NULL;
 
     // Si la lista de procesos está vacía, asignar el nuevo proceso como el primero
@@ -61,7 +79,7 @@ void mkprocess(char** arguments, int argumentCount) {
     }
 
     // Agregar el nuevo proceso al final de la lista
-    processNode_t* current = processList;
+    current = processList;
     while (current->next != NULL) current = current->next;
     current->next = newNode;
 }
@@ -75,7 +93,7 @@ void lsprocesses() {
     }
 
     while (current != NULL) {
-        printf("Process '%s': %dt\n", current->process_t.name, current->process_t.burstTime);
+        printf("Process '%s': %dt | %dbs \n", current->process_t.name, current->process_t.burstTime, current->process_t.blockSize);
         current = current->next;
     }
 }
@@ -87,7 +105,7 @@ void freeProcess(processNode_t* process) {
 }
 
 // Función para ejecutar el algoritmo de scheduling First Come First Served
-// TODO: Verificar que el proceso esté cargado en memoria. Cambiar processList por el bloque de memoria con los procesos cargados
+// TODO: Verificar que el proceso esté cargado en memoria. Cambiar processList por el bloque de memoria con los procesos cargados. Agregar freeProcess al final del while para liberar memoria
 void firstComeFirstServed(const char* algorithm) {
     if (processList == NULL) {
         printf("FCFS scheduling: No processes in ready queue.\n");
@@ -145,7 +163,7 @@ void shortestJobFirst() {
 }
 
 // Función para ejecutar el algoritmo de scheduling Round Robin
-// TODO: Cambiar processList por el bloque de memoria con los procesos cargados
+// TODO: Cambiar processList por el bloque de memoria con los procesos cargados. Agregar freeProcess al final del while para liberar memoria
 void roundRobin(char** arguments, int argumentCount) {
     // Si no se especifica un quantum, se usa el valor por defecto de 10
     int timeQuantum = 10;
@@ -257,5 +275,38 @@ void roundRobin(char** arguments, int argumentCount) {
     for (int i = 0; i < processCount; i++) {
         freeProcess(processList);
         processList = processList->next;
+    }
+}
+
+// Función para matar un proceso (quitar de la ready queue)
+// uso: killprocess <processId> <process2Id> ...
+void killprocess(char** arguments, int argumentCount) {
+    if (argumentCount <= 0) {
+        printf("killprocess: Expected at least one argument.\n");
+        return;
+    }
+
+    for (int i = 0; i < argumentCount; i++) {
+        char* processId = arguments[i];
+        processNode_t* current = processList;
+        processNode_t* previous = NULL;
+
+        while (current != NULL) {
+            if (!strcmp(current->process_t.name, processId)) {
+                if (previous == NULL) {
+                    processList = current->next;
+                } else {
+                    previous->next = current->next;
+                }
+
+                freeProcess(current);
+                break;
+            }
+
+            previous = current;
+            current = current->next;
+        }
+
+        if (current == NULL) printf("killprocess: Process '%s' not found.\n", processId);
     }
 }
