@@ -22,3 +22,5 @@ cmake --build .
 ## Lo que falta por hacer se encuentra marcado con TODO
 - Se puede encontrar utilizando la funcionalidad de buscar escribiendo '*// TODO:*'
 
+## Manual
+- El manual se encuentra en [Overleaf](https://www.overleaf.com/read/jzytyqnbkqxc#381c21), para editarlo, checa tu correo.
