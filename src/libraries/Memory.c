@@ -50,7 +50,6 @@ void firstFit(process_t process) {
 
     while (current != NULL) {
         if (current->status == FREE && current->blockSize >= process.blockSize) {
-            // Crear el nuevo bloque dinámicamente si sobra espacio
             if (current->blockSize > process.blockSize) {
                 memoryBlock_t* newFreeBlock = malloc(sizeof(memoryBlock_t));
                 if (newFreeBlock == NULL) {
@@ -128,8 +127,6 @@ void memorystatus() {
         printf("memoryStatus: No processes in memory.\n");
         return;
     }
-
-    // TODO: Implementar la impresión de los bloques de memoria (casi implementada). Se tienen que ver visualmente los bloques de memoria y los fragmentos libres (ya se ven los bloques de memoria, cuando haya fragmentos hay que probar que se vean)
 
     while (current != NULL) {
         int totalWidth = 25; // Ancho total para el marco
@@ -209,7 +206,48 @@ void memorystatus() {
 }
 
 // Función para compactar la memoria
-// TODO: Implementar la compactación de memoria
 void compactmemory() {
-    printf("compactmemory: Memory compaction not implemented.\n");
+    memoryBlock_t* current = memoryList;
+    memoryBlock_t* previous = NULL;
+    int memoryAcum = 0;
+
+    while (current != NULL) {
+        current->address = current->address - memoryAcum;
+
+        if (current->status == FREE && current->next != NULL) {
+            if(current->next->status == OCCUPIED){
+                if (previous == NULL) {
+                    memoryList = current->next; 
+                    memoryAcum += current->blockSize;
+                    current = current->next;
+                } else {
+                    previous->next = current->next;                     
+                    memoryAcum += current->blockSize;
+                    free(current);                  
+                    current = previous->next;      
+                }
+            }
+        } else {
+            previous = current;
+            current = current->next;
+        }
+
+        if(current == NULL){
+            if(previous->status == OCCUPIED){
+                memoryBlock_t* newFreeBlock = malloc(sizeof(memoryBlock_t));
+                if (newFreeBlock == NULL) {
+                    printf("Error: No se pudo asignar memoria para el nuevo bloque.\n");
+                    return;
+                }
+                newFreeBlock->processName = "";
+                newFreeBlock->address =  previous->address + previous->blockSize;
+                newFreeBlock->status = FREE;
+                newFreeBlock->blockSize = memoryAcum;
+                newFreeBlock->next = NULL;
+                previous->next = newFreeBlock;
+            } else {
+                previous->blockSize += memoryAcum;
+            }
+        }
+    }
 }
