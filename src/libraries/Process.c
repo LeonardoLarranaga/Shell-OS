@@ -152,7 +152,6 @@ void freeProcessNode(processNode_t* process) {
 }
 
 // Función para ejecutar el algoritmo de scheduling First Come First Served
-// TODO: cuando se hace kill al final de los procesos, se quedan n - 1 bloques de memoria libres
 void firstComeFirstServed(const char* algorithm) {
     printf("Entered firstComeFirstServed\n");
     if (processList == NULL) {
@@ -245,8 +244,121 @@ void shortestJobFirst() {
 }
 
 // Función para ejecutar el algoritmo de scheduling Round Robin
-// TODO: Cambiar processList por el bloque de memoria con los procesos cargados. Agregar freeProcess al final del while para liberar memoria
-void roundRobin(char** arguments, int argumentCount) {
+// void roundRobin(char** arguments, int argumentCount) {
+//     // Si no se especifica un quantum, se usa el valor por defecto de 10
+//     int timeQuantum = 10;
+//     if (argumentCount == 1) {
+//         timeQuantum = atoi(arguments[0]);
+//         if (timeQuantum <= 0) {
+//             printf("roundrobin: Quantum must be greater than 0.\n");
+//             return;
+//         }
+//     } else if (argumentCount != 0) {
+//         printf("roundrobin: Expected only one optional argument.\n");
+//         return;
+//     }
+
+//     if (processList == NULL) {
+//         printf("Round Robin scheduling: No processes in ready queue.\n");
+//         return;
+//     }
+
+//     int time = 0, totalWaitingTime = 0, totalTurnaroundTime = 0, processCount = 0;
+
+//     // Contar la cantidad de procesos
+//     for (processNode_t* temp = processList; temp != NULL; temp = temp->next) processCount += 1;
+
+//     // Crear un arreglo con los burst times restantes de los procesos
+//     int remainingBurstTimes[processCount];
+//     int index = 0;
+//     for (processNode_t* temp = processList; temp != NULL; temp = temp->next) {
+//         remainingBurstTimes[index] = temp->process_t.burstTime;
+//         index += 1;
+//     }
+        
+//     // Crear arreglos para los waiting times y turnaround times
+//     int waitingTimes[processCount], turnaroundTimes[processCount];
+//     for (int i = 0; i < processCount; i++) {
+//         waitingTimes[i] = 0;
+//         turnaroundTimes[i] = 0;
+//     }
+
+//     printf("Round Robin scheduling. Q = %dt:\n", timeQuantum);
+//     processNode_t* current = processList;
+
+//     int finishedProcesses = 0;
+//     while (finishedProcesses < processCount) {
+//         index = 0;
+//         current = processList;
+
+//         while (current != NULL) {
+//             if (remainingBurstTimes[index] > 0) {
+//                 // Ejecutar el proceso actual por el tiempo quantum o el burst time restante
+//                 int executionTime = remainingBurstTimes[index] > timeQuantum ? timeQuantum : remainingBurstTimes[index];
+
+//                 // Imprimir el proceso que se está ejecutando
+//                 printf("Executing process '%s' at %dt for %dt ", 
+//                     current->process_t.name, 
+//                     time, 
+//                     executionTime
+//                 );
+
+//                 time += executionTime;
+//                 remainingBurstTimes[index] -= executionTime;
+//                 printf("(remaining %dt)\n", remainingBurstTimes[index]);
+
+//                 // Actualizar los waiting times y turnaround times
+//                 if (remainingBurstTimes[index] == 0) {
+//                     turnaroundTimes[index] = time;
+//                     waitingTimes[index] = turnaroundTimes[index] - current->process_t.burstTime;
+//                     totalTurnaroundTime += turnaroundTimes[index];
+//                     totalWaitingTime += waitingTimes[index];
+//                     finishedProcesses += 1;
+//                 }
+//             }
+
+//             current = current->next;
+//             index += 1;
+//         }
+//     }
+
+//     // Imprimir los waiting times y turnaround times
+//     printf("\n%-15s %-12s %-14s %-18s\n", 
+//         "Process", 
+//         "Burst Time", 
+//         "Waiting Time", 
+//         "Turnaround Time"
+//     );
+
+//     index = 0;
+//     current = processList;
+//     while (current != NULL) {
+//         printf("%-15s %-12d %-14d %-18d\n",
+//             current->process_t.name,
+//             current->process_t.burstTime,
+//             waitingTimes[index],
+//             turnaroundTimes[index]
+//         );
+
+//         current = current->next;
+//         index += 1;
+//     }
+
+//     printf("------------------------------------------------------------\n");
+//     printf("%-15s %-12s %-14.2f %-18.2f\n", 
+//         "Average", "",
+//        (float) totalWaitingTime / processCount,
+//        (float) totalTurnaroundTime / processCount
+//     );
+
+//     // Liberar memoria asignada
+//     for (int i = 0; i < processCount; i++) {
+//         freeProcessNode(processList);
+//         processList = processList->next;
+//     }
+// }
+
+void roundRobinMemory(char** arguments, int argumentCount) {
     // Si no se especifica un quantum, se usa el valor por defecto de 10
     int timeQuantum = 10;
     if (argumentCount == 1) {
@@ -260,71 +372,79 @@ void roundRobin(char** arguments, int argumentCount) {
         return;
     }
 
-    if (processList == NULL) {
-        printf("Round Robin scheduling: No processes in ready queue.\n");
+    int time = 0, totalWaitingTime = 0, totalTurnaroundTime = 0, processCount = 0;
+
+    // Contar la cantidad de procesos en memoria
+    for (memoryBlock_t* temp = memoryList; temp != NULL; temp = temp->next)
+        if (temp->status == OCCUPIED) processCount += 1;
+    
+    if (processCount == 0) {
+        printf("Round Robin scheduling: No occupied memory blocks.\n");
         return;
     }
 
-    int time = 0, totalWaitingTime = 0, totalTurnaroundTime = 0, processCount = 0;
+    // Crear arreglos para tiempos restantes, waiting times y turnaround times
+    int remainingBurstTimes[processCount], waitingTimes[processCount], turnaroundTimes[processCount];
 
-    // Contar la cantidad de procesos
-    for (processNode_t* temp = processList; temp != NULL; temp = temp->next) processCount += 1;
+    memset(waitingTimes, 0, sizeof(int) * processCount);
+    memset(turnaroundTimes, 0, sizeof(int) * processCount);
 
-    // Crear un arreglo con los burst times restantes de los procesos
-    int remainingBurstTimes[processCount];
+    // Inicializar los tiempos de ráfaga restantes
     int index = 0;
-    for (processNode_t* temp = processList; temp != NULL; temp = temp->next) {
-        remainingBurstTimes[index] = temp->process_t.burstTime;
-        index += 1;
-    }
-        
-    // Crear arreglos para los waiting times y turnaround times
-    int waitingTimes[processCount], turnaroundTimes[processCount];
-    for (int i = 0; i < processCount; i++) {
-        waitingTimes[i] = 0;
-        turnaroundTimes[i] = 0;
+    memoryBlock_t* current = memoryList;
+    while (current != NULL) {
+        if (current->status == OCCUPIED) {
+            processNode_t* process = NULL;
+            findProcess(current->processName, &process);
+            if (process != NULL) {
+                remainingBurstTimes[index] = process->process_t.burstTime;
+            }
+            index++;
+        }
+        current = current->next;
     }
 
     printf("Round Robin scheduling. Q = %dt:\n", timeQuantum);
-    processNode_t* current = processList;
 
     int finishedProcesses = 0;
     while (finishedProcesses < processCount) {
         index = 0;
-        current = processList;
+        current = memoryList;
 
         while (current != NULL) {
-            if (remainingBurstTimes[index] > 0) {
-                // Ejecutar el proceso actual por el tiempo quantum o el burst time restante
-                int executionTime = remainingBurstTimes[index] > timeQuantum ? timeQuantum : remainingBurstTimes[index];
+            if (current->status == OCCUPIED) {
+                processNode_t* process = NULL;
+                findProcess(current->processName, &process);
+                if (process != NULL && remainingBurstTimes[index] > 0) {
+                    // Ejecutar el proceso actual por el tiempo quantum o el tiempo restante
+                    int executionTime = remainingBurstTimes[index] > timeQuantum ? timeQuantum : remainingBurstTimes[index];
 
-                // Imprimir el proceso que se está ejecutando
-                printf("Executing process '%s' at %dt for %dt ", 
-                    current->process_t.name, 
-                    time, 
-                    executionTime
-                );
+                    printf("Executing process '%s' at %dt for %dt ", 
+                        process->process_t.name, 
+                        time, 
+                        executionTime
+                    );
 
-                time += executionTime;
-                remainingBurstTimes[index] -= executionTime;
-                printf("(remaining %dt)\n", remainingBurstTimes[index]);
+                    time += executionTime;
+                    remainingBurstTimes[index] -= executionTime;
+                    printf("(remaining %dt)\n", remainingBurstTimes[index]);
 
-                // Actualizar los waiting times y turnaround times
-                if (remainingBurstTimes[index] == 0) {
-                    turnaroundTimes[index] = time;
-                    waitingTimes[index] = turnaroundTimes[index] - current->process_t.burstTime;
-                    totalTurnaroundTime += turnaroundTimes[index];
-                    totalWaitingTime += waitingTimes[index];
-                    finishedProcesses += 1;
+                    // Actualizar tiempos
+                    if (remainingBurstTimes[index] == 0) {
+                        turnaroundTimes[index] = time;
+                        waitingTimes[index] = turnaroundTimes[index] - process->process_t.burstTime;
+                        totalTurnaroundTime += turnaroundTimes[index];
+                        totalWaitingTime += waitingTimes[index];
+                        finishedProcesses++;
+                    }
                 }
+                index++;
             }
-
             current = current->next;
-            index += 1;
         }
     }
 
-    // Imprimir los waiting times y turnaround times
+    // Imprimir los resultados
     printf("\n%-15s %-12s %-14s %-18s\n", 
         "Process", 
         "Burst Time", 
@@ -333,35 +453,35 @@ void roundRobin(char** arguments, int argumentCount) {
     );
 
     index = 0;
-    current = processList;
+    current = memoryList;
     while (current != NULL) {
-        printf("%-15s %-12d %-14d %-18d\n",
-            current->process_t.name,
-            current->process_t.burstTime,
-            waitingTimes[index],
-            turnaroundTimes[index]
-        );
-
+        if (current->status == OCCUPIED) {
+            killprocess(&current->processName, 1);
+            index++;
+        }
         current = current->next;
-        index += 1;
     }
 
     printf("------------------------------------------------------------\n");
     printf("%-15s %-12s %-14.2f %-18.2f\n", 
         "Average", "",
-       (float) totalWaitingTime / processCount,
-       (float) totalTurnaroundTime / processCount
+        (float) totalWaitingTime / processCount,
+        (float) totalTurnaroundTime / processCount
     );
 
-    // Liberar memoria asignada
-    for (int i = 0; i < processCount; i++) {
-        freeProcessNode(processList);
-        processList = processList->next;
+    // Kill procesos cargados en memoria
+    current = memoryList;
+    while (current != NULL) {
+        if (current->status == OCCUPIED) {
+            killprocess(&current->processName, 1);
+        }
+        current = current->next;
     }
 }
 
 // Función para matar un proceso (quitar de la ready queue)
 // uso: killprocess <processId> <process2Id> ...
+// TODO: cuando se hace kill al final de los procesos (al terminar roundrobin, sjf o fcfs), se quedan n - 1 bloques de memoria libres (donde n es la cantidad de procesos) + el bloque libre inicial, no se si eso esta bien
 void killprocess(char** arguments, int argumentCount) {
     if (argumentCount <= 0) {
         printf("killprocess: Expected at least one argument.\n");

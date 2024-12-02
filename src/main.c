@@ -106,7 +106,7 @@ void executeCommand(char* command, char** arguments, int argumentCount) {
     } else if (!strcmp(command, "sjf")) {
         shortestJobFirst();
     } else if (!strcmp(command, "roundrobin")) {
-        roundRobin(arguments, argumentCount);
+        roundRobinMemory(arguments, argumentCount);
     } else if (!strcmp(command, "killprocess")) {
         killprocess(arguments, argumentCount);
     } else if (!strcmp(command, "allocate")) {

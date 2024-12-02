@@ -19,6 +19,7 @@ typedef struct processNode_t {
 void firstComeFirstServed(const char*);
 void shortestJobFirst();
 void roundRobin(char**, int);
+void roundRobinMemory(char**, int);
 void mkprocess(char**, int);
 void lsprocesses();
 void killprocess(char**, int);
