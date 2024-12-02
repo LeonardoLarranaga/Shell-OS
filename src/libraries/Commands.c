@@ -151,6 +151,8 @@ char** parseCommands(char* command, const char* delimiter) {
 
 // executeCommands - Ejecuta los comandos ingresados por el usuario
 void executeCommands(char** commands) {
+    int stdin = dup(STDIN_FILENO);
+    int stdout = dup(STDOUT_FILENO);
     // Contar la cantidad de comandos
     int commandsAmount = 0;
     while (commands[commandsAmount] != NULL) commandsAmount++;
@@ -210,4 +212,10 @@ void executeCommands(char** commands) {
     for (int i = 0; i < commandsAmount; i++) {
         wait(NULL);
     }
+
+    dup2(stdin, STDIN_FILENO);
+    dup2(stdout, STDOUT_FILENO);
+
+    close(stdin);
+    close(stdout);
 }

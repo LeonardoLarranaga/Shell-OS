@@ -29,8 +29,32 @@ void main() {
     char** arguments = NULL;
     int argumentCount = 0;
 
+    system("clear");
     while (1) {
-        printf("yuniks:~$ ");
+        printf("Cantidad de bits de la memoria: ");
+        input = readLine();
+        memorySize = atoi(input);
+        if(memorySize <= 0) printf("Tiene que ser un numero entero positivo.\n\n");
+        else {
+            printf("\n"); 
+            
+            memoryBlock_t memory = {
+                .processName = "",       
+                .address = 0,
+                .status = FREE,
+                .next = NULL,
+                .blockSize = memorySize
+            };
+
+            memoryList = &memory;
+            
+            break;
+        }
+    }
+
+
+    while (1) {
+        printf("kaly:~$ ");
         input = readLine();
 
         // Parsear la entrada en comando y argumentos
