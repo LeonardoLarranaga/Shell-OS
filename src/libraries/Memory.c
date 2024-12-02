@@ -53,7 +53,7 @@ void firstFit(process_t process) {
             if (current->blockSize > process.blockSize) {
                 memoryBlock_t* newFreeBlock = malloc(sizeof(memoryBlock_t));
                 if (newFreeBlock == NULL) {
-                    printf("Error: No se pudo asignar memoria para el nuevo bloque.\n");
+                    printf("allocate: Memory couldn't be assigned to new block.\n");
                     return;
                 }
 
@@ -76,7 +76,7 @@ void firstFit(process_t process) {
         current = current->next;
     }
 
-    printf("No se encontró un bloque adecuado para el proceso '%s'.\n", process.name);
+    printf("allocate: A memory block couldn't be found for process '%s'.\n", process.name);
 }
 
 
@@ -97,7 +97,7 @@ void worstFit(process_t process) {
 
     // Si no se encontró un bloque adecuado
     if (worst == NULL) {
-        printf("Error: No hay suficiente memoria para el proceso '%s'.\n", process.name);
+        printf("allocate: Memory couldn't fit process '%s'.\n", process.name);
         return;
     }
 
@@ -105,7 +105,7 @@ void worstFit(process_t process) {
     if (worst->blockSize > process.blockSize) {
         memoryBlock_t* newFreeBlock = malloc(sizeof(memoryBlock_t));
         if (newFreeBlock == NULL) {
-            printf("Error: No se pudo asignar memoria para el nuevo bloque.\n");
+            printf("allocate: Memory couldn't be assigned to new block.\n");
             return;
         }
 
@@ -141,7 +141,7 @@ void bestFit(process_t process) {
 
     // Si no se encontró un bloque adecuado
     if (best == NULL) {
-        printf("Error: No hay suficiente memoria para el proceso '%s'.\n", process.name);
+        printf("allocate: Memory couldn't fit process '%s'.\n", process.name);
         return;
     }
 
@@ -149,7 +149,7 @@ void bestFit(process_t process) {
     if (best->blockSize > process.blockSize) {
         memoryBlock_t* newFreeBlock = malloc(sizeof(memoryBlock_t));
         if (newFreeBlock == NULL) {
-            printf("Error: No se pudo asignar memoria para el nuevo bloque.\n");
+            printf("allocate: Memory couldn't be assigned to new block.\n");
             return;
         }
 
@@ -210,7 +210,7 @@ void memorystatus() {
     memoryBlock_t* current = memoryList;
     
     if (current == NULL) {
-        printf("memoryStatus: No processes in memory.\n");
+        printf("memorystatus: No processes in memory.\n");
         return;
     }
 
@@ -220,7 +220,7 @@ void memorystatus() {
         strcpy(blockStatusStr, current->status == OCCUPIED ? "OCCUPIED" : "FREE");
 
         // Calcular relleno para centrar el nombre
-        char *name = "Memory free";
+        char *name = "Free Memory Block";
         int nameLength = strlen(name);
         int namePadding = (totalWidth - nameLength) / 2;
         int nameExtraPadding = (totalWidth - nameLength) % 2;
@@ -322,7 +322,7 @@ void compactmemory() {
             if(previous->status == OCCUPIED){
                 memoryBlock_t* newFreeBlock = malloc(sizeof(memoryBlock_t));
                 if (newFreeBlock == NULL) {
-                    printf("Error: No se pudo asignar memoria para el nuevo bloque.\n");
+                    printf("compactmemory: Memory couldn't be assigned to new block.\n");
                     return;
                 }
                 newFreeBlock->processName = "";

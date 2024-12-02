@@ -22,8 +22,6 @@ void executeCommand(char*, char**, int);
 
 char* input = NULL;
 
-// TODO: Preguntar al usuario el tamaño de la memoria cuando hacerlo? el proyecto dice que al inicio del programa... mmmmmm... tal vez el tamano de la memoria inicia como 0 y si el usuario quiere asignar procesos a la memoria se le dice que le tiene que asignar un tamano a la memoria primero idk
-
 void main() {
     char* command = NULL;
     char** arguments = NULL;
@@ -31,13 +29,12 @@ void main() {
 
     system("clear");
     while (1) {
-        printf("Cantidad de bits de la memoria: ");
+        printf("kaly:~$ Enter memory size in bytes: ");
         input = readLine();
         memorySize = atoi(input);
-        if(memorySize <= 0) printf("Tiene que ser un numero entero positivo.\n\n");
-        else {
-            printf("\n"); 
-            
+        if(memorySize <= 0) 
+            printf("kaly:~$ Expected memory size bigger than zero.\n");
+        else {            
             memoryBlock_t memory = {
                 .processName = "",       
                 .address = 0,
@@ -45,9 +42,9 @@ void main() {
                 .next = NULL,
                 .blockSize = memorySize
             };
-
-            memoryList = &memory;
             
+            memoryList = &memory;
+    
             break;
         }
     }
