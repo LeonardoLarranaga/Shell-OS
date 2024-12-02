@@ -481,7 +481,9 @@ void roundRobinMemory(char** arguments, int argumentCount) {
 
 // Función para matar un proceso (quitar de la ready queue)
 // uso: killprocess <processId> <process2Id> ...
-// TODO: cuando se hace kill al final de los procesos (al terminar roundrobin, sjf o fcfs), se quedan n - 1 bloques de memoria libres (donde n es la cantidad de procesos) + el bloque libre inicial, no se si eso esta bien
+// TODO: cuando se hace kill al final de los procesos (al terminar roundrobin, sjf o fcfs), 
+// se quedan n - 1 bloques de memoria libres (donde n es la cantidad de procesos) + el bloque libre inicial, 
+// no se si eso esta bien
 void killprocess(char** arguments, int argumentCount) {
     if (argumentCount <= 0) {
         printf("killprocess: Expected at least one argument.\n");

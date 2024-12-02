@@ -180,6 +180,7 @@ void freeprocess(char** arguments, int argumentCount) {
     for (int i = 0; i < argumentCount; i++) {
         char* processId = arguments[i];
         memoryBlock_t* current = memoryList;
+        memoryBlock_t* previous = NULL;
 
         while (current != NULL) {
             if (!strcmp(current->processName, processId)) {
@@ -192,9 +193,17 @@ void freeprocess(char** arguments, int argumentCount) {
 
                 current->processName = "";
                 current->status = FREE;
+
+                if (previous != NULL && previous->status == FREE) {
+                    previous->blockSize += current->blockSize; 
+                    previous->next = current->next;        
+                    free(current);                          
+                    current = previous;                    
+                }
+
                 return;
             }
-
+            previous = current;
             current = current->next;
         }
 
