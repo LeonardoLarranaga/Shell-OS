@@ -337,3 +337,18 @@ void compactmemory() {
         }
     }
 }
+
+// Función para buscar un proceso en la lista
+void findProcess(char* processId, processNode_t** process) {
+    *process = NULL;
+    processNode_t* current = processList;
+
+    while (current != NULL) {
+        if (!strcmp(current->process_t.name, processId)) {
+            *process = current;
+            return;
+        }
+
+        current = current->next;
+    }
+}

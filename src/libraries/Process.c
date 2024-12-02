@@ -99,16 +99,32 @@ void lsprocesses() {
 }
 
 // Función para liberar un proceso
-void freeProcess(processNode_t* process) {
-    free(process->process_t.name);
+void freeProcessNode(processNode_t* process) {
+    if (process == NULL) return;
+    if (process->process_t.name != NULL) {
+        free(process->process_t.name);
+        process->process_t.name = NULL;
+    }
     free(process);
 }
 
 // Función para ejecutar el algoritmo de scheduling First Come First Served
-// TODO: Verificar que el proceso esté cargado en memoria. Cambiar processList por el bloque de memoria con los procesos cargados. Agregar freeProcess al final del while para liberar memoria
+// TODO: cuando se hace kill al final de los procesos, se queda un cuadro extra arriba
 void firstComeFirstServed(const char* algorithm) {
     if (processList == NULL) {
         printf("FCFS scheduling: No processes in ready queue.\n");
+        return;
+    }
+
+    // Verificar que haya procesos cargados en memoria
+    memoryBlock_t* current = memoryList;
+    while (current != NULL) {
+        if (current->status == OCCUPIED) break;
+        current = current->next;
+    }
+
+    if (current == NULL || current->status == FREE) {
+        printf("FCFS scheduling: No processes in memory.\n");
         return;
     }
 
@@ -123,14 +139,27 @@ void firstComeFirstServed(const char* algorithm) {
 
     int time = 0, totalWaitingTime = 0, totalTurnaroundTime = 0, waitingTime = 0, turnaroundTime = 0, burstTime = 0, processCount = 0;
 
-    while (processList != NULL) {
-        burstTime = processList->process_t.burstTime;
+    current = memoryList;
+    processNode_t* processInBlock = (processNode_t*) malloc(sizeof(processNode_t));
+    while (current != NULL) {
+        if (current->status != OCCUPIED) {
+            current = current->next;
+            continue;
+        }
+
+        findProcess(current->processName, &processInBlock);        
+        if (processInBlock == NULL) {
+            current = current->next;
+            continue;
+        }
+
+        burstTime = processInBlock->process_t.burstTime;
         waitingTime = time;
         turnaroundTime = waitingTime + burstTime;
 
         printf("%-8d %-15s %-12d %-14d %-18d\n",
             time,
-            processList->process_t.name,
+            processInBlock->process_t.name,
             burstTime,
             waitingTime,
             turnaroundTime
@@ -140,11 +169,10 @@ void firstComeFirstServed(const char* algorithm) {
         totalWaitingTime += waitingTime;
         totalTurnaroundTime += turnaroundTime;
 
-        freeProcess(processList);
-        
-        processList = processList->next;
+        current = current->next;
         processCount += 1;
     }
+
 
     printf("------------------------------------------------------------\n");
     printf("%-8s %-15s %-12s %-14.2f %-18.2f\n", 
@@ -152,6 +180,16 @@ void firstComeFirstServed(const char* algorithm) {
        (float) totalWaitingTime / processCount,
        (float) totalTurnaroundTime / processCount
     );
+
+    // Kill procesos cargados en memoria
+    current = memoryList;
+    while (current != NULL) {
+        if (current->status == OCCUPIED) {
+            killprocess(&current->processName, 1);
+        }
+        current = current->next;
+    }
+
 }
 
 // Función para ejecutar el algoritmo de scheduling Shortest Job First
@@ -273,7 +311,7 @@ void roundRobin(char** arguments, int argumentCount) {
 
     // Liberar memoria asignada
     for (int i = 0; i < processCount; i++) {
-        freeProcess(processList);
+        freeProcessNode(processList);
         processList = processList->next;
     }
 }
@@ -299,7 +337,7 @@ void killprocess(char** arguments, int argumentCount) {
                     previous->next = current->next;
                 }
 
-                freeProcess(current);
+                freeprocess(&current->process_t.name, 1);
                 break;
             }
 

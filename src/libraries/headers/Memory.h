@@ -32,5 +32,6 @@ void firstFit(process_t process);
 void freeprocess(char**, int);
 void memorystatus();
 void compactmemory();
+void findProcess(char*, processNode_t**);
 
 #endif
