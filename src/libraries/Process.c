@@ -30,6 +30,49 @@ void bubbleSort(processNode_t *start) {
         lptr = ptr1;  
     }  while (swapped);  
 }  
+
+// Función para intercambiar dos bloques de memoria
+void swapMemory(memoryBlock_t *a, memoryBlock_t *b) {
+    memoryBlock_t temp = *a;
+    *a = *b;
+    *b = temp;
+
+    // Ajustar punteros para preservar la estructura de la lista enlazada
+    memoryBlock_t* tempNext = a->next;
+    a->next = b->next;
+    b->next = tempNext;
+}
+
+// Función para ordenar los bloques de memoria por burst time del proceso asociado
+void bubbleSortMemory(memoryBlock_t *start) {
+    if (start == NULL) return; // Lista vacía, no hay nada que ordenar
+
+    int swapped;
+    memoryBlock_t *ptr1;
+    memoryBlock_t *lptr = NULL;
+
+    do {
+        swapped = 0;
+        ptr1 = start;
+
+        while (ptr1->next != lptr) {
+            // Obtener los procesos asociados con los bloques actuales
+            processNode_t *process1 = NULL, *process2 = NULL;
+            findProcess(ptr1->processName, &process1);
+            findProcess(ptr1->next->processName, &process2);
+
+            // Si ambos bloques están ocupados y sus procesos existen
+            if (process1 != NULL && process2 != NULL &&
+                process1->process_t.burstTime > process2->process_t.burstTime) {
+                swapMemory(ptr1, ptr1->next);
+                swapped = 1;
+            }
+
+            ptr1 = ptr1->next;
+        }
+        lptr = ptr1;
+    } while (swapped);
+}
   
 // Función para crear un proceso
 // uso: mkprocess <processId> <burstTime> <blockSize>
@@ -109,10 +152,11 @@ void freeProcessNode(processNode_t* process) {
 }
 
 // Función para ejecutar el algoritmo de scheduling First Come First Served
-// TODO: cuando se hace kill al final de los procesos, se queda un cuadro extra arriba
+// TODO: cuando se hace kill al final de los procesos, se quedan n - 1 bloques de memoria libres
 void firstComeFirstServed(const char* algorithm) {
+    printf("Entered firstComeFirstServed\n");
     if (processList == NULL) {
-        printf("FCFS scheduling: No processes in ready queue.\n");
+        printf("%s scheduling: No processes in ready queue.\n", algorithm);
         return;
     }
 
@@ -124,7 +168,7 @@ void firstComeFirstServed(const char* algorithm) {
     }
 
     if (current == NULL || current->status == FREE) {
-        printf("FCFS scheduling: No processes in memory.\n");
+        printf("%s scheduling: No processes in memory.\n", algorithm);
         return;
     }
 
@@ -140,7 +184,7 @@ void firstComeFirstServed(const char* algorithm) {
     int time = 0, totalWaitingTime = 0, totalTurnaroundTime = 0, waitingTime = 0, turnaroundTime = 0, burstTime = 0, processCount = 0;
 
     current = memoryList;
-    processNode_t* processInBlock = (processNode_t*) malloc(sizeof(processNode_t));
+    processNode_t* processInBlock = NULL;
     while (current != NULL) {
         if (current->status != OCCUPIED) {
             current = current->next;
@@ -195,7 +239,7 @@ void firstComeFirstServed(const char* algorithm) {
 // Función para ejecutar el algoritmo de scheduling Shortest Job First
 void shortestJobFirst() {
     // Ordenar los procesos por burst time
-    bubbleSort(processList);
+    bubbleSortMemory(memoryList);
     // Ejecutar el algoritmo de scheduling FCFS
     firstComeFirstServed("SJF");
 }

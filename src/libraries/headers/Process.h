@@ -16,8 +16,6 @@ typedef struct processNode_t {
     struct processNode_t *next;
 } processNode_t;
 
-void swap(processNode_t*, processNode_t *);
-void bubbleSort(processNode_t*);
 void firstComeFirstServed(const char*);
 void shortestJobFirst();
 void roundRobin(char**, int);
