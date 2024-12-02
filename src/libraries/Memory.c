@@ -88,9 +88,48 @@ void worstFit(process_t process) {
 
 // Función para asignar memoria con el algoritmo First Fit
 void bestFit(process_t process) {
-    // TODO: Implementar la asignación de memoria con el algoritmo First Fit
-    printf("allocate: First fit strategy not implemented.\n");
+    memoryBlock_t* current = memoryList;
+    memoryBlock_t* best = NULL;
+
+    // Buscar el mejor bloque libre
+    while (current != NULL) {
+        if (current->status == FREE && current->blockSize >= process.blockSize) {
+            if (best == NULL || current->blockSize < best->blockSize) {
+                best = current;
+            }
+        }
+        current = current->next;
+    }
+
+    // Si no se encontró un bloque adecuado
+    if (best == NULL) {
+        printf("Error: No hay suficiente memoria para el proceso '%s'.\n", process.name);
+        return;
+    }
+
+    // Dividir el bloque si sobra espacio
+    if (best->blockSize > process.blockSize) {
+        memoryBlock_t* newFreeBlock = malloc(sizeof(memoryBlock_t));
+        if (newFreeBlock == NULL) {
+            printf("Error: No se pudo asignar memoria para el nuevo bloque.\n");
+            return;
+        }
+
+        newFreeBlock->processName = "";
+        newFreeBlock->address = best->address + process.blockSize;
+        newFreeBlock->status = FREE;
+        newFreeBlock->blockSize = best->blockSize - process.blockSize;
+        newFreeBlock->next = best->next;
+
+        best->next = newFreeBlock;
+    }
+
+    // Asignar el bloque al proceso
+    best->processName = process.name;
+    best->status = OCCUPIED;
+    best->blockSize = process.blockSize;
 }
+
 
 // Función para liberar memoria de un proceso
 // uso: freeprocess <processId> <process2Id> ...
