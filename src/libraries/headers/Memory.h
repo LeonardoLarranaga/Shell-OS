@@ -9,11 +9,11 @@ enum BlockStatus {
 } typedef BlockStatus;
 
 typedef struct memoryBlock_t {
-    process_t process_t;
+    char *processName;
     int address;
     BlockStatus status;
     struct memoryBlock_t* next;
-    // int blockSize; blockSize se encuentra en process_t
+    int blockSize;
 } memoryBlock_t;
 
 // Lista de procesos
@@ -26,10 +26,9 @@ extern memoryBlock_t* memoryList;
 extern int memorySize;
 
 void allocate(char**, int);
-void bestFit(char*);
-void worstFit(char*);
-void firstFit(char*);
-void testFit(char*);
+void bestFit(process_t);
+void worstFit(process_t process);
+void firstFit(process_t process);
 void freeprocess(char**, int);
 void memorystatus();
 void compactmemory();
