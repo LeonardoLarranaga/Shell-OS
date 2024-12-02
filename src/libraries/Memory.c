@@ -106,18 +106,27 @@ void freeprocess(char** arguments, int argumentCount) {
 
         while (current != NULL) {
             if (!strcmp(current->processName, processId)) {
+                if (current->next != NULL && current->next->status == FREE) {
+                    memoryBlock_t* freeBlock = current->next; 
+                    current->blockSize += freeBlock->blockSize; 
+                    current->next = freeBlock->next; 
+                    free(freeBlock); 
+                }
+
                 current->processName = "";
                 current->status = FREE;
-
                 return;
             }
 
             current = current->next;
         }
 
-        if (current == NULL) printf("freeprocess: Process '%s' not found.\n", processId);   
+        if (current == NULL) {
+            printf("freeprocess: Process '%s' not found.\n", processId);
+        }
     }
 }
+
 
 // Función para ver el estado de la memoria
 void memorystatus() {
