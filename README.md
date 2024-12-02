@@ -16,7 +16,7 @@ cmake --build .
 - Ejecutar el programa:
 
 ```
-./yuniks
+./kaly
 ```
 
 ## Lo que falta por hacer se encuentra marcado con TODO
