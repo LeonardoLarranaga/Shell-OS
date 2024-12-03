@@ -445,14 +445,33 @@ void roundRobinMemory(char** arguments, int argumentCount) {
     }
 
     // Imprimir los resultados
+    index = 0;
+    current = memoryList;
     printf("\n%-15s %-12s %-14s %-18s\n", 
         "Process", 
         "Burst Time", 
         "Waiting Time", 
         "Turnaround Time"
     );
-
     index = 0;
+    while (current != NULL) {
+        if (current->status == OCCUPIED) {
+            processNode_t* process = NULL;
+            findProcess(current->processName, &process);
+            if (process != NULL) {
+                printf("%-15s %-12d %-14d %-18d\n",
+                    process->process_t.name,
+                    process->process_t.burstTime,
+                    waitingTimes[index],
+                    turnaroundTimes[index]
+                );
+            }
+            index += 1;
+        }
+        
+        current = current->next;
+    }
+
     current = memoryList;
     while (current != NULL) {
         if (current->status == OCCUPIED) {
