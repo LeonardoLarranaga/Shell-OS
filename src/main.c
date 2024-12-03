@@ -117,7 +117,11 @@ void executeCommand(char* command, char** arguments, int argumentCount) {
         memorystatus();
     } else if (!strcmp(command, "compactmemory")) {
         compactmemory();
-    } else {
+    } else if (!strcmp(command, "manual")) {
+        printf("Kaly's manual can be found at https://www.overleaf.com/read/jzytyqnbkqxc#381c21\n");
+    } else if (!strcmp(command, "sourcecode")) {
+        printf("Kaly's source code can be found at https://github.com/LeonardoLarranaga/Shell-OS\n");
+    } {
         // Manejar comandos con pipes
         char** commands = parseCommands(input, "|");
         executeCommands(commands);
