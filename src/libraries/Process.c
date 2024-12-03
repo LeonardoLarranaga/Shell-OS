@@ -467,7 +467,7 @@ void roundRobinMemory(char** arguments, int argumentCount) {
                 );
             }
             index += 1;
-        }
+        } 
         
         current = current->next;
     }
